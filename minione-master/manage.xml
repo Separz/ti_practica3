@@ -1,0 +1,10 @@
+<network>
+  <name>manage</name>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <domain name='manage'/>
+  <ip address='172.16.25.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='172.16.25.100' end='172.16.25.200'/>
+    </dhcp>
+  </ip>
+</network>

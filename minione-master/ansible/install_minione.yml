@@ -1,0 +1,34 @@
+---
+- name: Instalar Minione
+  hosts: minone
+  become: true
+  gather_facts: no
+  tasks:
+    - name: Asegurar entrada en /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^\S+\s+minione\.midominio\.org\s+minione'
+        line: '{{ ansible_host }} minione.midominio.org minione'
+        state: present
+
+    - name: Descargar Minione usando wget (forzado)
+      ansible.builtin.command: >
+        wget -O /tmp/minione 'https://github.com/OpenNebula/minione/releases/latest/download/minione'
+      args:
+        creates: /tmp/minione 
+
+    - name: Añadir permisos de ejecución al script
+      ansible.builtin.file:
+        path: /tmp/minione
+        mode: '0755'
+
+    - name: Ejecutar instalador Minione y capturar salida
+      ansible.builtin.shell: |
+        echo yes | bash /tmp/minione 2>&1
+      args:
+        executable: /bin/bash
+      register: minione_install
+
+    - name: Mostrar salida de la instalación
+      ansible.builtin.debug:
+        var: minione_install.stdout_lines
