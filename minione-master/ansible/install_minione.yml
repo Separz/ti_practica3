@@ -32,3 +32,22 @@
     - name: Mostrar salida de la instalación
       ansible.builtin.debug:
         var: minione_install.stdout_lines
+
+    - name: Obtener contraseña de oneadmin desde archivo
+      ansible.builtin.command: cat /var/lib/one/.one/one_auth
+      register: one_auth_file
+
+    - name: Extraer contraseña
+      set_fact:
+        oneadmin_password: "{{ one_auth_file.stdout.split(':')[1] }}"
+
+    - name: Guardar credenciales en archivo local one_auth
+      local_action:
+        module: copy
+        content: "{{ one_auth_file.stdout }}"
+        dest: "../terraform/vms/one_auth"
+      become: no
+
+    - name: Mostrar contraseña capturada
+      ansible.builtin.debug:
+        msg: "Contraseña de oneadmin capturada: {{ oneadmin_password }}"

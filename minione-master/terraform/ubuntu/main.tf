@@ -11,7 +11,7 @@ resource "libvirt_volume" "os_image" {
 
 resource "null_resource" "resize_volume" {
   provisioner "local-exec" {
-    command = "sudo qemu-img resize ${libvirt_volume.os_image.id} ${var.diskSize}G"
+    command = "sudo qemu-img resize ${libvirt_volume.os_image.id} ${var.diskSize}G && sleep 2"
   }
 
   depends_on = [libvirt_volume.os_image]
@@ -26,7 +26,7 @@ data "template_file" "user_data" {
     hostname = var.hostname
     fqdn = "${var.hostname}.${var.domain}"
     username = var.username
-    public_key = file("~/.ssh/id_ed25519.pub")
+    public_key = file("/home/${var.username}/.ssh/id_ed25519.pub")
   }
 }
 
@@ -74,6 +74,8 @@ resource "libvirt_domain" "domain-servermaas" {
   }
 
   cloudinit = libvirt_cloudinit_disk.commoninit.id
+
+  depends_on = [null_resource.resize_volume]
 
   # Ubuntu can hang is a isa-serial is not present at boot time.
   # If you find your CPU 100% and never is available this is why

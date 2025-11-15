@@ -1,7 +1,7 @@
 
 variable "hostname" {
   default = "foo"
-  description = "Nombre del servidor Canonical MaaS"
+  description = "Nombre del servidor"
 }
 
 variable "domain" {
