@@ -11,6 +11,11 @@
         line: '{{ ansible_host }} minione.midominio.org minione'
         state: present
 
+    - name: Instalar wget
+      ansible.builtin.package:
+        name: wget
+        state: present
+
     - name: Descargar Minione usando wget (forzado)
       ansible.builtin.command: >
         wget -O /tmp/minione 'https://github.com/OpenNebula/minione/releases/latest/download/minione'
@@ -41,12 +46,13 @@
       set_fact:
         oneadmin_password: "{{ one_auth_file.stdout.split(':')[1] }}"
 
-    - name: Guardar credenciales en archivo local one_auth
-      local_action:
-        module: copy
+    - name: Guardar credenciales en archivo local
+      delegate_to: localhost
+      become: no
+      ansible.builtin.copy:
         content: "{{ one_auth_file.stdout }}"
         dest: "../terraform/vms/one_auth"
-      become: no
+
 
     - name: Mostrar contraseña capturada
       ansible.builtin.debug:

@@ -1,11 +1,13 @@
 
 #--- GET ISO IMAGE
 
-# Fetch the ubuntu image
+# Fetch the image
 resource "libvirt_volume" "os_image" {
   name = "${var.hostname}-os_image"
   pool = "pool"
-  source = "${var.path_to_image}/jammy-server-cloudimg-amd64.img"
+  # source = "${var.path_to_image}/jammy-server-cloudimg-amd64.img"
+  #source = "${var.path_to_image}/Rocky-9-GenericCloud.latest.x86_64.qcow2"
+  source = "${var.path_to_image}/Rocky-9-GenericCloud-Base.latest.x86_64.qcow2"
   format = "qcow2"
 }
 
@@ -46,12 +48,21 @@ data "template_file" "network_config" {
   template = file("${path.module}/config/network_config.cfg")
 }
 
+data "template_file" "meta_data" {
+  template = file("${path.module}/config/meta-data")
+  vars = {
+    hostname = var.hostname
+    fqdn     = "${var.hostname}.${var.domain}"
+  }
+}
+
 # 3. Add ssh-key and network config to the instance
 resource "libvirt_cloudinit_disk" "commoninit" {
-  name = "${var.hostname}-commoninit.iso"
-  pool = "pool"
+  name           = "${var.hostname}-commoninit.iso"
+  pool           = "pool"
   user_data      = data.template_cloudinit_config.config.rendered
   network_config = data.template_file.network_config.rendered
+  meta_data      = data.template_file.meta_data.rendered
 }
 
 #--- CREATE VM
