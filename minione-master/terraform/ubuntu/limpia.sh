@@ -18,8 +18,13 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Nombre de la VM (debe coincidir con var.hostname)
-VM_NAME="foo"
+# Obtener el nombre de la VM desde variables de Terraform
+# Intenta leer desde terraform.tfvars, si no existe usa variables.tf, si falla usa "foo" por defecto
+VM_NAME=$(grep -E "^\s*hostname\s*=" terraform.tfvars 2>/dev/null | sed 's/.*=\s*"\([^"]*\)".*/\1/' || \
+          grep -E "default\s*=\s*\"" variables.tf | grep hostname -A1 | grep default | sed 's/.*"\(.*\)".*/\1/' || \
+          echo "foo")
+
+echo "Detectado VM_NAME: $VM_NAME"
 
 #-------------------------------------------------------------------------------
 # 1. Intentar destruir con Terraform
